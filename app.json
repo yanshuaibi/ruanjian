@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "NEXUS",
+    "slug": "nexus-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "nexus",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yanshuaibi.nexus"
+    },
+    "android": {
+      "package": "com.yanshuaibi.nexus",
+      "adaptiveIcon": {
+        "backgroundColor": "#379BE5",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
