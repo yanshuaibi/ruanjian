@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
 
 const TAB_ICONS = {
@@ -29,45 +29,52 @@ export default function CustomTabBar({ state, descriptors, navigation }) {
 
   return (
     <View style={styles.wrapper}>
-      <BlurView intensity={65} tint="light" style={styles.bar}>
-        <Animated.View
-          style={[
-            styles.pill,
-            { transform: [{ translateX: pillX }] },
-          ]}
-        />
-        {state.routes.map((route, index) => {
-          const { options } = descriptors[route.key];
-          const isFocused = state.index === index;
+      <View style={styles.shadowBox}>
+        <BlurView
+          intensity={45}
+          tint="light"
+          experimentalBlurMethod="dimezisBlurView"
+          style={styles.bar}
+        >
+          <View style={styles.glassOverlay} />
+          <Animated.View
+            style={[
+              styles.pill,
+              { transform: [{ translateX: pillX }] },
+            ]}
+          />
+          {state.routes.map((route, index) => {
+            const isFocused = state.index === index;
 
-          const onPress = () => {
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            });
-            if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
-            }
-          };
+            const onPress = () => {
+              const event = navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
+              });
+              if (!isFocused && !event.defaultPrevented) {
+                navigation.navigate(route.name);
+              }
+            };
 
-          return (
-            <TouchableOpacity
-              key={route.key}
-              onPress={onPress}
-              activeOpacity={0.7}
-              style={styles.tabBtn}
-            >
-              <Text style={[styles.icon, isFocused && styles.iconActive]}>
-                {TAB_ICONS[route.name]}
-              </Text>
-              <Text style={[styles.label, isFocused && styles.labelActive]}>
-                {route.name}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </BlurView>
+            return (
+              <TouchableOpacity
+                key={route.key}
+                onPress={onPress}
+                activeOpacity={0.7}
+                style={styles.tabBtn}
+              >
+                <Text style={[styles.icon, isFocused && styles.iconActive]}>
+                  {TAB_ICONS[route.name]}
+                </Text>
+                <Text style={[styles.label, isFocused && styles.labelActive]}>
+                  {route.name}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </BlurView>
+      </View>
     </View>
   );
 }
@@ -80,27 +87,39 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
   },
-  bar: {
+  shadowBox: {
     width: BAR_WIDTH,
     height: 64,
+    borderRadius: 30,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#2a6ca7',
+        shadowOpacity: 0.2,
+        shadowRadius: 18,
+        shadowOffset: { width: 0, height: 6 },
+      },
+      android: {
+        elevation: 12,
+      },
+    }),
+  },
+  bar: {
+    flex: 1,
     borderRadius: 30,
     flexDirection: 'row',
     alignItems: 'center',
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.4)',
-    shadowColor: '#2a6ca7',
-    shadowOpacity: 0.18,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 10,
+  },
+  glassOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255,255,255,0.22)',
   },
   pill: {
     position: 'absolute',
     width: PILL_WIDTH,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(55,155,229,0.16)',
+    backgroundColor: 'rgba(55,155,229,0.18)',
   },
   tabBtn: {
     width: SLOT_WIDTH,
@@ -111,7 +130,7 @@ const styles = StyleSheet.create({
   },
   icon: {
     fontSize: 18,
-    opacity: 0.55,
+    opacity: 0.6,
   },
   iconActive: {
     opacity: 1,
