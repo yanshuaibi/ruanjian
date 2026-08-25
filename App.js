@@ -6,7 +6,7 @@ export default function App() {
     return (
         <>
             <RootNavigation />
-            <StatusBar style="dark" />
+            <StatusBar hidden={true} />
         </>
     );
 }
