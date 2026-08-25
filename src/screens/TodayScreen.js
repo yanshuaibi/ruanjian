@@ -14,7 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const QUOTES = [
   { text: '专注于旅程，而非目的地。快乐不是在终点找到的，而是在沿途找到的。', author: '格雷格·安德森' },
-  { text: '你today做的事，决定了你未来会成为什么样的人。', author: '未知' },
+  { text: '你今天做的事，决定了你未来会成为什么样的人。', author: '未知' },
   { text: '不要等待机会，而要创造机会。', author: '乔治·萧伯纳' },
   { text: '每一个不曾起舞的日子，都是对生命的辜负。', author: '尼采' },
   { text: '慢慢来，比较快。', author: '未知' },
@@ -23,12 +23,13 @@ const QUOTES = [
 const WEEKDAYS = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
 
 function getGreeting(hour) {
-  if (hour < 6) return { icon: '🌙', text: '夜深了，注意休息' };
-  if (hour < 12) return { icon: '☀️', text: '上午好，加油' };
-  if (hour < 14) return { icon: '🍚', text: '中午好，记得吃饭' };
-  if (hour < 18) return { icon: '🏙️', text: '下午好，继续加油' };
-  if (hour < 22) return { icon: '🌆', text: '晚上好，辛苦了' };
-  return { icon: '🌙', text: '夜深了，早点休息' };
+  if (hour >= 5 && hour < 9) return '🌅 早上好，元气满满的一天开始啦';
+  if (hour >= 9 && hour < 12) return '☀️ 上午好，专注当下';
+  if (hour >= 12 && hour < 14) return '🌤️ 中午好，记得吃饭休息';
+  if (hour >= 14 && hour < 18) return '🌇 下午好，继续加油';
+  if (hour >= 18 && hour < 21) return '🌆 傍晚好，今天辛苦了';
+  if (hour >= 21 && hour < 23) return '🌙 晚上好，适当放松一下';
+  return '🌌 夜深了，注意休息';
 }
 
 function formatTime(date) {
@@ -57,11 +58,9 @@ export default function TodayScreen() {
   useEffect(() => {
     (async () => {
       try {
-        const stored = await AsyncStorage.getItem('@nexus_today_note');
+        const stored = await AsyncStorage.getItem('nexus_note_v1');
         if (stored !== null) setNote(stored);
-      } catch (e) {
-        // 忽略读取失败，不影响页面使用
-      }
+      } catch (e) {}
     })();
   }, []);
 
@@ -70,12 +69,10 @@ export default function TodayScreen() {
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(async () => {
       try {
-        await AsyncStorage.setItem('@nexus_today_note', text);
+        await AsyncStorage.setItem('nexus_note_v1', text);
         setSavedIndicator(true);
-        setTimeout(() => setSavedIndicator(false), 1200);
-      } catch (e) {
-        // 忽略保存失败
-      }
+        setTimeout(() => setSavedIndicator(false), 2000);
+      } catch (e) {}
     }, 500);
   };
 
@@ -93,16 +90,19 @@ export default function TodayScreen() {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          {/* 问候卡片 */}
-          <View style={styles.greetingCard}>
-            <Text style={styles.dateText}>{dateStr}</Text>
-            <Text style={styles.greetingText}>
-              {greeting.icon} {greeting.text}
-            </Text>
+          {/* Hero 今日卡片 */}
+          <LinearGradient
+            colors={['#1a1a2e', '#16213e']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.hero}
+          >
+            <Text style={styles.heroDate}>{dateStr}</Text>
+            <Text style={styles.heroGreeting}>{greeting}</Text>
 
             <View style={styles.clockWrapper}>
               <LinearGradient
-                colors={['#8B5CF6', '#4C1D95', '#1E1B4B']}
+                colors={['#ad5fff', '#471eec']}
                 start={{ x: 0.2, y: 0.1 }}
                 end={{ x: 0.9, y: 0.9 }}
                 style={styles.clockCircle}
@@ -112,21 +112,21 @@ export default function TodayScreen() {
             </View>
 
             <View style={styles.quoteBox}>
-              <Text style={styles.quoteText}>"{quote.text}"</Text>
+              <Text style={styles.quoteText}>" {quote.text} "</Text>
               <Text style={styles.quoteAuthor}>— {quote.author}</Text>
             </View>
-          </View>
+          </LinearGradient>
 
           {/* 便签卡片 */}
           <View style={styles.noteCard}>
             <View style={styles.noteHeader}>
               <Text style={styles.noteTitle}>📝 便签</Text>
-              {savedIndicator && <Text style={styles.savedText}>已保存</Text>}
+              {savedIndicator && <Text style={styles.savedText}>已保存 ✓</Text>}
             </View>
             <TextInput
               style={styles.noteInput}
-              placeholder="随手记点什么..."
-              placeholderTextColor="#9CA3AF"
+              placeholder="随手记点什么…"
+              placeholderTextColor="#8e99a3"
               multiline
               value={note}
               onChangeText={handleNoteChange}
@@ -148,85 +148,99 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 32,
   },
-  greetingCard: {
-    backgroundColor: '#111827',
-    borderRadius: 20,
-    padding: 20,
+  hero: {
+    borderRadius: 24,
+    paddingVertical: 28,
+    paddingHorizontal: 16,
     alignItems: 'center',
+    marginBottom: 16,
   },
-  dateText: {
-    color: '#9CA3AF',
-    fontSize: 14,
+  heroDate: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.5)',
+    letterSpacing: 0.5,
     marginBottom: 8,
   },
-  greetingText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '600',
+  heroGreeting: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.92)',
     marginBottom: 20,
   },
   clockWrapper: {
     marginVertical: 8,
   },
   clockCircle: {
-    width: 220,
-    height: 220,
-    borderRadius: 110,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
   },
   clockText: {
     color: '#FFFFFF',
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
-    letterSpacing: 1,
+    letterSpacing: 0.5,
   },
   quoteBox: {
     marginTop: 24,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
     borderRadius: 14,
-    padding: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
     width: '100%',
   },
   quoteText: {
-    color: '#E5E7EB',
-    fontSize: 14,
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 13,
     lineHeight: 22,
+    fontStyle: 'italic',
     textAlign: 'center',
   },
   quoteAuthor: {
-    color: '#9CA3AF',
-    fontSize: 12,
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 11,
     textAlign: 'right',
     marginTop: 8,
+    letterSpacing: 0.5,
   },
   noteCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 18,
-    padding: 16,
-    marginTop: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    borderColor: '#e3e8ec',
+    borderWidth: 1,
   },
   noteHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   noteTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#374151',
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#8e99a3',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
   savedText: {
-    fontSize: 12,
-    color: '#10B981',
+    fontSize: 11,
+    color: '#4FAE4E',
   },
   noteInput: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#f0f4f7',
+    borderColor: '#e3e8ec',
+    borderWidth: 1.5,
     borderRadius: 12,
     padding: 12,
     minHeight: 100,
     fontSize: 14,
-    color: '#111827',
+    lineHeight: 22,
+    color: '#1c1c1e',
   },
 });
