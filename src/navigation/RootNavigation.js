@@ -15,7 +15,8 @@ export default function RootNavigation() {
         <NavigationContainer>
             <Tab.Navigator
                 tabBarPosition="bottom"
-                screenOptions={{ swipeEnabled: true }}
+                swipeEnabled={true}
+                animationEnabled={true}
                 tabBar={(props) => <CustomTabBar {...props} />}
             >
                 <Tab.Screen name="今日" component={TodayScreen} />
@@ -24,5 +25,5 @@ export default function RootNavigation() {
                 <Tab.Screen name="我的" component={ProfileScreen} />
             </Tab.Navigator>
         </NavigationContainer>
-    )
+    );
 }
